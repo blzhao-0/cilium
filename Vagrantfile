@@ -236,6 +236,7 @@ Vagrant.configure(2) do |config|
                 end
             end
             node.vm.hostname = "#{node_hostname}"
+            if false then
             if ENV['CILIUM_TEMP'] then
                 if ENV["K8S"] then
                     k8sinstall = "#{ENV['CILIUM_TEMP']}/cilium-k8s-install-1st-part.sh"
@@ -257,6 +258,7 @@ Vagrant.configure(2) do |config|
                         privileged: true,
                         path: k8sinstall
                 end
+            end
             end
         end
     end

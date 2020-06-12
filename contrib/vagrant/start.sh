@@ -25,7 +25,7 @@ export 'IPV6_PUBLIC_CIDR'=${IPV4+"FD00::"}
 #   master  : FD01::B/16
 #   worker 1: FD01::C/16
 # The netmask used will be /16
-export 'IPV6_INTERNAL_CIDR'=${IPV4+"FD01::"}
+export 'IPV6_INTERNAL_CIDR'=${IPV4+"F00D::"}
 # Cilium IPv6 node CIDR. Each node will be setup with IPv6 network of
 # $CILIUM_IPV6_NODE_CIDR + 6to4($MASTER_IPV4). For IPv4 "192.168.33.11" we will
 # have for example:
