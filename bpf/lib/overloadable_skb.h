@@ -74,8 +74,16 @@ redirect_self(const struct __sk_buff *ctx)
 #ifdef ENABLE_HOST_REDIRECT
 	return redirect(ctx->ifindex, 0);
 #else
+#ifdef NATIVE_IFINDEX
+	if (ctx->ifindex == NATIVE_IFINDEX) {
+		return redirect(ctx->ifindex, 0);
+	} else {
+		return redirect(ctx->ifindex, BPF_F_INGRESS);
+	}
+#else
 	return redirect(ctx->ifindex, BPF_F_INGRESS);
-#endif
+#endif /* NATIVE_IFINDEX */
+#endif /* ENABLE_HOST_REDIRECT */
 }
 
 static __always_inline __maybe_unused void

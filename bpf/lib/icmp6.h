@@ -9,6 +9,7 @@
 #include "common.h"
 #include "eth.h"
 #include "drop.h"
+#include "eps.h"
 
 #define ICMP6_TYPE_OFFSET (sizeof(struct ipv6hdr) + offsetof(struct icmp6hdr, icmp6_type))
 #define ICMP6_CSUM_OFFSET (sizeof(struct ipv6hdr) + offsetof(struct icmp6hdr, icmp6_cksum))
@@ -153,8 +154,17 @@ static __always_inline int icmp6_send_echo_reply(struct __ctx_buff *ctx,
 	return DROP_MISSED_TAIL_CALL;
 }
 
+/*
+ * send_icmp6_ndisc_adv
+ * @ctx:	   socket buffer
+ * @nh_off:	   offset to the IPv6 header
+ * @mac:       device mac address
+ * @to_router: ndisc is sent to router, otherwise ndisc is sent to an endpoint.
+ *
+ * Send an ICMPv6 nadv reply in return to an ICMPv6 ndisc.
+ */
 static __always_inline int send_icmp6_ndisc_adv(struct __ctx_buff *ctx,
-						int nh_off, union macaddr *mac)
+						int nh_off, union macaddr *mac, bool to_router)
 {
 	struct icmp6hdr icmp6hdr __align_stack_8 = {}, icmp6hdr_old __align_stack_8;
 	__u8 opts[8], opts_old[8];
@@ -170,9 +180,16 @@ static __always_inline int send_icmp6_ndisc_adv(struct __ctx_buff *ctx,
 	icmp6hdr.icmp6_code = 0;
 	icmp6hdr.icmp6_cksum = icmp6hdr_old.icmp6_cksum;
 	icmp6hdr.icmp6_dataun.un_data32[0] = 0;
-	icmp6hdr.icmp6_router = 1;
-	icmp6hdr.icmp6_solicited = 1;
-	icmp6hdr.icmp6_override = 0;
+
+	if (to_router) {
+		icmp6hdr.icmp6_router = 1;
+		icmp6hdr.icmp6_solicited = 1;
+		icmp6hdr.icmp6_override = 0;
+	} else {
+		icmp6hdr.icmp6_router = 0;
+		icmp6hdr.icmp6_solicited = 0;
+		icmp6hdr.icmp6_override = 1;
+	}
 
 	if (ctx_store_bytes(ctx, nh_off + sizeof(struct ipv6hdr), &icmp6hdr, sizeof(icmp6hdr), 0) < 0)
 		return DROP_WRITE_ERROR;
@@ -345,6 +362,7 @@ static __always_inline int icmp6_send_time_exceeded(struct __ctx_buff *ctx,
 static __always_inline int __icmp6_handle_ns(struct __ctx_buff *ctx, int nh_off)
 {
 	union v6addr target, router;
+	struct endpoint_info *ep;
 
 	if (ctx_load_bytes(ctx, nh_off + ICMP6_ND_TARGET_OFFSET, target.addr,
 			   sizeof(((struct ipv6hdr *)NULL)->saddr)) < 0)
@@ -352,11 +370,17 @@ static __always_inline int __icmp6_handle_ns(struct __ctx_buff *ctx, int nh_off)
 
 	cilium_dbg(ctx, DBG_ICMP6_NS, target.p3, target.p4);
 
+	ep = __lookup_ip6_endpoint(&target);
+
 	BPF_V6(router, ROUTER_IP);
 	if (ipv6_addrcmp(&target, &router) == 0) {
 		union macaddr router_mac = NODE_MAC;
 
-		return send_icmp6_ndisc_adv(ctx, nh_off, &router_mac);
+		return send_icmp6_ndisc_adv(ctx, nh_off, &router_mac, true);
+	} else if (ep != NULL) {
+		union macaddr node_mac = NODE_MAC;
+
+		return send_icmp6_ndisc_adv(ctx, nh_off, &node_mac, false);
 	} else {
 		/* Unknown target address, drop */
 		return ACTION_UNKNOWN_ICMP6_NS;

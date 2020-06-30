@@ -335,6 +335,7 @@ function write_cilium_cfg() {
     fi
 
     cilium_options+=" ${TUNNEL_MODE_STRING}"
+    cilium_options+=" --devices enp0s8"
 
 cat <<EOF >> "$filename"
 sleep 2s
