@@ -10,6 +10,7 @@
 #include "eth.h"
 #include "drop.h"
 #include "eps.h"
+#include "dbg.h"
 
 #define ICMP6_TYPE_OFFSET (sizeof(struct ipv6hdr) + offsetof(struct icmp6hdr, icmp6_type))
 #define ICMP6_CSUM_OFFSET (sizeof(struct ipv6hdr) + offsetof(struct icmp6hdr, icmp6_cksum))
@@ -450,6 +451,11 @@ icmp6_host_handle(struct __ctx_buff *ctx __maybe_unused)
 {
 	__u8 type __maybe_unused;
 
+	type = icmp6_load_type(ctx, ETH_HLEN);
+	if (type == ICMP6_NS_MSG_TYPE) {
+		return __icmp6_handle_ns(ctx, ETH_HLEN);
+	}
+
 #ifdef ENABLE_HOST_FIREWALL
 	/* When the host firewall is enabled, we drop and allow ICMPv6 messages
 	 * according to RFC4890, except for echo request and reply messages which
@@ -497,7 +503,7 @@ icmp6_host_handle(struct __ctx_buff *ctx __maybe_unused)
 	 * |       ICMPv6-unallocated        | CTX_ACT_DROP |      |
 	 * |       ICMPv6-unassigned         | CTX_ACT_DROP |      |
 	 */
-	type = icmp6_load_type(ctx, ETH_HLEN);
+
 	if (type == ICMP6_ECHO_REQUEST_MSG_TYPE || type == ICMP6_ECHO_REPLY_MSG_TYPE)
 		return CTX_ACT_OK;
 

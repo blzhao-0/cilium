@@ -334,6 +334,8 @@ handle_ipv6(struct __ctx_buff *ctx, __u32 secctx, const bool from_host)
 	bool skip_redirect = false;
 	struct endpoint_info *ep;
 
+	printk("%s\n", "handle_ipv6");
+
 	if (!revalidate_data(ctx, &data, &data_end, &ip6))
 		return DROP_INVALID;
 
@@ -359,8 +361,11 @@ handle_ipv6(struct __ctx_buff *ctx, __u32 secctx, const bool from_host)
 	}
 #endif /* ENABLE_NODEPORT */
 
+
 	if (!skip_redirect) {
 		__u8 nexthdr = ip6->nexthdr;
+
+		printk("%s\n", "skip_redirect is false");
 		hdrlen = ipv6_hdrlen(ctx, ETH_HLEN, &nexthdr);
 		if (hdrlen < 0)
 			return hdrlen;
@@ -370,6 +375,8 @@ handle_ipv6(struct __ctx_buff *ctx, __u32 secctx, const bool from_host)
 			if (IS_ERR(ret))
 				return ret;
 		}
+	} else {
+		printk("%s\n", "skip_redirect is true");
 	}
 
 	if (from_host && !skip_redirect) {
@@ -1101,6 +1108,8 @@ do_netdev(struct __ctx_buff *ctx, __u16 proto, const bool from_host)
 	__u32 __maybe_unused identity = 0;
 	int ret;
 
+	printk("%s %d\n", "do_netdev", from_host);
+
 #ifdef ENABLE_IPSEC
 	if (1) {
 		__u32 magic = ctx->mark & MARK_MAGIC_HOST_MASK;
@@ -1200,6 +1209,8 @@ static __always_inline int
 handle_netdev(struct __ctx_buff *ctx, const bool from_host)
 {
 	__u16 proto;
+
+	printk("%s\n","handle_netdev");
 
 	if (!validate_ethertype(ctx, &proto)) {
 #ifdef ENABLE_HOST_FIREWALL
