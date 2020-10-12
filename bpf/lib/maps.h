@@ -10,6 +10,9 @@
 
 #include "bpf/compiler.h"
 
+// XXX: Only for test
+#define ENABLE_EGRESS_GATEWAY 1
+
 struct bpf_elf_map __section_maps ENDPOINTS_MAP = {
 	.type		= BPF_MAP_TYPE_HASH,
 	.size_key	= sizeof(struct endpoint_key),
@@ -164,6 +167,33 @@ struct bpf_elf_map __section_maps ENCRYPT_MAP = {
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= 1,
 };
+
+#ifdef ENABLE_EGRESS_GATEWAY
+
+struct egress_key {
+	__u16 pad1;
+	__u8 pad2;
+	__u8 family;
+	union {
+		struct {
+			__u32		ip4;
+			__u32		pad4;
+			__u32		pad5;
+			__u32		pad6;
+		};
+		union v6addr	ip6;
+	};
+};
+struct bpf_elf_map __section_maps EGRESS_MAP = {
+	.type		= BPF_MAP_TYPE_HASH,
+	.size_key	= sizeof(struct egress_key),
+	.size_value	= sizeof(struct remote_endpoint_info),
+	.pinning	= PIN_GLOBAL_NS,
+	.max_elem	= 25600, // TODO: define in node_config.h
+	.flags		= BPF_F_NO_PREALLOC,
+};
+
+#endif /* ENABLE_EGRESS_GATEWAY */
 
 #ifndef SKIP_CALLS_MAP
 static __always_inline void ep_tail_call(struct __ctx_buff *ctx,

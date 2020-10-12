@@ -34,6 +34,7 @@ import (
 	"github.com/cilium/cilium/pkg/ipcache"
 	"github.com/cilium/cilium/pkg/logging/logfields"
 	"github.com/cilium/cilium/pkg/maps/ctmap"
+	egressmap "github.com/cilium/cilium/pkg/maps/egress"
 	"github.com/cilium/cilium/pkg/maps/eventsmap"
 	"github.com/cilium/cilium/pkg/maps/fragmap"
 	ipcachemap "github.com/cilium/cilium/pkg/maps/ipcache"
@@ -337,6 +338,10 @@ func (d *Daemon) initMaps() error {
 	// appearing would require a regeneration of the endpoint anyway in
 	// order for the endpoint to gain the privilege of communication.
 	if _, err := ipcachemap.IPCache.OpenParallel(); err != nil {
+		return err
+	}
+
+	if _, err := egressmap.Egress.OpenParallel(); err != nil {
 		return err
 	}
 

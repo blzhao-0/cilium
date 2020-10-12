@@ -130,4 +130,24 @@ LPM_LOOKUP_FN(lookup_ip4_remote_endpoint, __be32, IPCACHE4_PREFIXES,
 #define lookup_ip4_remote_endpoint(addr) \
 	ipcache_lookup4(&IPCACHE_MAP, addr, V4_CACHE_KEY_LEN)
 #endif /* HAVE_LPM_TRIE_MAP_TYPE */
+
+#define ENABLE_EGRESS_GATEWAY 1
+
+#ifdef ENABLE_EGRESS_GATEWAY
+static __always_inline __maybe_unused struct remote_endpoint_info *
+egress_lookup4(struct bpf_elf_map *map, __be32 addr)
+{
+	struct egress_key key = {
+		.family = ENDPOINT_KEY_IPV4,
+		.ip4 = addr,
+	};
+	return map_lookup_elem(map, &key);
+}
+
+#define lookup_ip4_egress_endpoint(addr) \
+	egress_lookup4(&EGRESS_MAP, addr)
+
+#endif /* ENABLE_EGRESS_GATEWAY */
+
 #endif /* __LIB_EPS_H_ */
+

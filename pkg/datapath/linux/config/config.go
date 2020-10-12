@@ -37,6 +37,7 @@ import (
 	"github.com/cilium/cilium/pkg/maps/bwmap"
 	"github.com/cilium/cilium/pkg/maps/callsmap"
 	"github.com/cilium/cilium/pkg/maps/ctmap"
+	"github.com/cilium/cilium/pkg/maps/egress"
 	"github.com/cilium/cilium/pkg/maps/encrypt"
 	"github.com/cilium/cilium/pkg/maps/eppolicymap"
 	"github.com/cilium/cilium/pkg/maps/eventsmap"
@@ -154,6 +155,9 @@ func (h *HeaderfileWriter) WriteNodeConfig(w io.Writer, cfg *datapath.LocalNodeC
 	cDefinesMap["CT_CLOSE_TIMEOUT"] = fmt.Sprintf("%d", int64(option.Config.CTMapEntriesTimeoutFIN.Seconds()))
 	cDefinesMap["CT_REPORT_INTERVAL"] = fmt.Sprintf("%d", int64(option.Config.MonitorAggregationInterval.Seconds()))
 	cDefinesMap["CT_REPORT_FLAGS"] = fmt.Sprintf("%#04x", int64(option.Config.MonitorAggregationFlags))
+
+	// TODO: control by flags
+	cDefinesMap["EGRESS_MAP"] = egress.Name
 
 	if option.Config.DatapathMode == datapathOption.DatapathModeIpvlan {
 		cDefinesMap["ENABLE_SECCTX_FROM_IPCACHE"] = "1"
@@ -427,6 +431,7 @@ func (h *HeaderfileWriter) WriteNodeConfig(w io.Writer, cfg *datapath.LocalNodeC
 	sort.Strings(keys)
 
 	for _, key := range keys {
+		fmt.Println(key)
 		fmt.Fprintf(fw, "#define %s %s\n", key, cDefinesMap[key])
 	}
 

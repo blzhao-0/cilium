@@ -9,6 +9,9 @@
 
 #define IS_BPF_OVERLAY 1
 
+// TODO: for testing
+#define DEBUG 1
+
 #include "lib/tailcall.h"
 #include "lib/common.h"
 #include "lib/edt.h"
@@ -271,6 +274,8 @@ int from_overlay(struct __ctx_buff *ctx)
 		ret = CTX_ACT_OK;
 		goto out;
 	}
+
+	printk("received: %d\n", proto);
 
 #ifdef ENABLE_IPSEC
 	if ((ctx->mark & MARK_MAGIC_HOST_MASK) == MARK_MAGIC_DECRYPT) {
