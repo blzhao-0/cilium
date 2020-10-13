@@ -328,6 +328,8 @@ static __always_inline int snat_v4_rewrite_egress(struct __ctx_buff *ctx,
 	__be32 sum_l4 = 0, sum;
 	int ret;
 
+	printk("in snat_v4_rewrite_egress: src %x, dst %x\n", tuple->saddr, tuple->daddr);
+
 	if (state->to_saddr == tuple->saddr &&
 	    state->to_sport == tuple->sport)
 		return 0;
@@ -547,8 +549,12 @@ static __always_inline __maybe_unused int snat_v4_process(struct __ctx_buff *ctx
 		return NAT_PUNT_TO_STACK;
 	};
 
-	if (snat_v4_can_skip(target, &tuple, dir, from_endpoint))
+	if (snat_v4_can_skip(target, &tuple, dir, from_endpoint)) {
+		// skipped ...
+		printk("snat_v4_can_skip is true src: %x dst: %x\n", tuple.saddr, tuple.daddr);
+		printk("... the target is %x\n", target->addr);
 		return NAT_PUNT_TO_STACK;
+	}
 	ret = snat_v4_handle_mapping(ctx, &tuple, &state, &tmp, dir, off, target);
 	if (ret > 0)
 		return CTX_ACT_OK;

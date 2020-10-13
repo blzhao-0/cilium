@@ -25,6 +25,11 @@
 # undef ENABLE_HOST_FIREWALL
 #endif
 
+// For testing
+#ifndef DEBUG
+#define DEBUG 1
+#endif
+
 #include "lib/common.h"
 #include "lib/edt.h"
 #include "lib/arp.h"
@@ -48,6 +53,7 @@
 #include "lib/host_firewall.h"
 #include "lib/overloadable.h"
 #include "lib/encrypt.h"
+#include "lib/egress_gw.h"
 
 #if defined(ENABLE_IPV4) || defined(ENABLE_IPV6)
 static __always_inline int rewrite_dmac_to_host(struct __ctx_buff *ctx,
@@ -925,6 +931,8 @@ int to_netdev(struct __ctx_buff *ctx __maybe_unused)
 	__u16 __maybe_unused proto = 0;
 	int ret = CTX_ACT_OK;
 
+	printk("to-netdev\n");
+
 #ifdef ENABLE_HOST_FIREWALL
 	if (!proto && !validate_ethertype(ctx, &proto)) {
 		ret = DROP_UNSUPPORTED_L2;
@@ -987,10 +995,22 @@ out:
 	}
 #endif
 
+	// TODO: For testing
+	if ((ctx->mark & MARK_MAGIC_SNAT_DONE) != MARK_MAGIC_SNAT_DONE) {
+		printk("before egress_nat_fwd\n"); 
+		ret = egress_nat_fwd(ctx);
+		if (IS_ERR(ret))
+			return send_drop_notify_error(ctx, 0, ret,
+						      CTX_ACT_DROP,
+						      METRIC_EGRESS);
+	}
+
+/*
 #if defined(ENABLE_NODEPORT) && \
 	(!defined(ENABLE_DSR) || \
 	 (defined(ENABLE_DSR) && defined(ENABLE_DSR_HYBRID)) || \
 	 defined(ENABLE_MASQUERADE))
+	printk("nodeport_nat_fwd 2\n");
 	if ((ctx->mark & MARK_MAGIC_SNAT_DONE) != MARK_MAGIC_SNAT_DONE) {
 		ret = nodeport_nat_fwd(ctx);
 		if (IS_ERR(ret))
@@ -999,6 +1019,7 @@ out:
 						      METRIC_EGRESS);
 	}
 #endif
+*/
 	send_trace_notify(ctx, TRACE_TO_NETWORK, src_id, 0, 0,
 			  0, ret, 0);
 	return ret;

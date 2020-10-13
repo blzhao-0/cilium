@@ -898,7 +898,10 @@ static __always_inline int nodeport_nat_ipv4_fwd(struct __ctx_buff *ctx,
 	};
 	int ret = CTX_ACT_OK;
 
+	printk("before snat_v4_needed check\n");
+
 	if (snat_v4_needed(ctx, addr, &from_endpoint))
+		printk("passed snat_v4_needed check\n");
 		ret = snat_v4_process(ctx, NAT_DIR_EGRESS, &target,
 				      from_endpoint);
 	if (ret == NAT_PUNT_TO_STACK)
