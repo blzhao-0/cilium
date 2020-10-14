@@ -225,6 +225,23 @@ struct remote_endpoint_info {
 	__u8		key;
 };
 
+struct egress_endpoint_info {
+	union {
+		struct {
+			__u32		egress_ip4;
+			__u32		pad1;
+			__u32		pad2;
+			__u32		pad3;
+		};
+		union v6addr	egress_ip6;
+	};
+	__u8 		family;
+	__u8		key;
+	__u16 		pad;
+	__u32		sec_label;
+	__u32		tunnel_endpoint;
+};
+
 struct policy_key {
 	__u32		sec_label;
 	__u16		dport;

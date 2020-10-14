@@ -19,6 +19,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/cilium/cilium/pkg/bpf"
 	"github.com/cilium/cilium/pkg/common"
 	"github.com/cilium/cilium/pkg/maps/egress"
 
@@ -34,18 +35,23 @@ var bpfEgressUpdateCmd = &cobra.Command{
 	Short: "Update endpoint IPs and their gateways",
 	Long:  egressListUsage,
 	Run: func(cmd *cobra.Command, args []string) {
-		common.RequireRootPrivilege("cilium bpf egress update <src_ip> <gw_ip>")
+		common.RequireRootPrivilege("cilium bpf egress update <src_ip> <gw_ip> <egress_ip>")
 
-		if len(args) < 2 {
-			fmt.Fprintf(os.Stderr, "requires 2 args\n")
+		if len(args) < 3 {
+			fmt.Fprintf(os.Stderr, "requires 3 args\n")
 			os.Exit(1)
 		}
 
 		key := egress.NewKey(net.ParseIP(args[0]))
-		value := &egress.RemoteEndpointInfo{}
+		value := &egress.EgressEndpointInfo{}
 
 		if ip4 := net.ParseIP(args[1]).To4(); ip4 != nil {
 			copy(value.TunnelEndpoint[:], ip4)
+		}
+
+		if ip4 := net.ParseIP(args[2]).To4(); ip4 != nil {
+			value.Family = bpf.EndpointKeyIPv4
+			copy(value.EgressIP[:], ip4)
 		}
 
 		if err := egress.Egress.Update(&key, value); err != nil {

@@ -187,7 +187,7 @@ struct egress_key {
 struct bpf_elf_map __section_maps EGRESS_MAP = {
 	.type		= BPF_MAP_TYPE_HASH,
 	.size_key	= sizeof(struct egress_key),
-	.size_value	= sizeof(struct remote_endpoint_info),
+	.size_value	= sizeof(struct egress_endpoint_info),
 	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= 25600, // TODO: define in node_config.h
 	.flags		= BPF_F_NO_PREALLOC,

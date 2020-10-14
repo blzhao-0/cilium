@@ -7,6 +7,7 @@
 #include <bpf/ctx/ctx.h>
 #include <bpf/api.h>
 
+#include "eps.h"
 #include "tailcall.h"
 #include "nat.h"
 #include "edt.h"
@@ -25,35 +26,52 @@ static __always_inline int nodeport_nat_ipv4_fwd(struct __ctx_buff *ctx,
     return 0;
 }
 
-static __always_inline void handle_nat_fwd_ipv4(struct __ctx_buff *ctx)
-{
-}
 */
+
+static __always_inline int handle_nat_fwd_ipv4(struct __ctx_buff *ctx)
+{
+    int ret = CTX_ACT_OK;
+    struct egress_endpoint_info *info;
+	bool from_endpoint = true;
+    struct iphdr *ip4;
+    void *data, *data_end;
+
+	if (!revalidate_data(ctx, &data, &data_end, &ip4))
+		return DROP_INVALID;
+
+    info = lookup_ip4_egress_endpoint(ip4->saddr);
+	if (!info) {
+		printk("missing egress endpoint\n");
+        return DROP_INVALID;
+	}
+    
+    // TODO: Fix 192.168.33.13;
+    // __be32 addr = 192 + (168<<8) + (33<<16) + (13<<24);
+    struct ipv4_nat_target target = {
+		.min_port = 32767,
+		.max_port = 43835,
+		.addr = info->egress_ip4,
+	};
+
+    ret = snat_v4_process(ctx, NAT_DIR_EGRESS, &target,
+				      from_endpoint);
+    return ret;
+}
+
 
 static __always_inline int egress_nat_fwd(struct __ctx_buff *ctx)
 {
     int ret = CTX_ACT_OK;
 	__u16 proto;
 
-    // TODO: Let's lie here say it's from endpoint (not 100% lie, it's from remote endpoint).
-	bool from_endpoint = true;
-
-    // 192.168.33.13;
-    __be32 addr = 192 + (168<<8) + (33<<16) + (13<<24);
-    struct ipv4_nat_target target = {
-		.min_port = 32767,
-		.max_port = 43835,
-		.addr = addr,
-	};
-
-	if (!validate_ethertype(ctx, &proto))
+    if (!validate_ethertype(ctx, &proto))
 		return CTX_ACT_OK;
+
 	switch (proto) {
 #ifdef ENABLE_IPV4
 	case bpf_htons(ETH_P_IP):
 		printk("snat_v4_process %d\n", proto);
-        ret = snat_v4_process(ctx, NAT_DIR_EGRESS, &target,
-				      from_endpoint);
+        ret = handle_nat_fwd_ipv4(ctx);
         printk("snat_v4_process result: %d\n", ret);
 		break;
 #endif /* ENABLE_IPV4 */

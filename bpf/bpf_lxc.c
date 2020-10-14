@@ -687,9 +687,8 @@ ct_recreate4:
 
 #ifdef ENABLE_EGRESS_GATEWAY
 	if (1) {
-		struct remote_endpoint_info *info;
+		struct egress_endpoint_info *info;
 		struct endpoint_key key = {};
-
 
 		// TODO: use your own map to find gateway
 		info = lookup_ip4_egress_endpoint(ip4->saddr);

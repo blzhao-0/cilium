@@ -134,7 +134,7 @@ LPM_LOOKUP_FN(lookup_ip4_remote_endpoint, __be32, IPCACHE4_PREFIXES,
 #define ENABLE_EGRESS_GATEWAY 1
 
 #ifdef ENABLE_EGRESS_GATEWAY
-static __always_inline __maybe_unused struct remote_endpoint_info *
+static __always_inline __maybe_unused struct egress_endpoint_info *
 egress_lookup4(struct bpf_elf_map *map, __be32 addr)
 {
 	struct egress_key key = {

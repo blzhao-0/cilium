@@ -54,7 +54,7 @@ var bpfEgressListCmd = &cobra.Command{
 		if len(bpfEgressList) == 0 {
 			fmt.Fprintf(os.Stderr, "No entries found.\n%v\n", kernelVersionWarning)
 		} else {
-			TablePrinter(ipAddrTitle, identityTitle, bpfEgressList)
+			TablePrinter(ipAddrTitle, "Identity Key TunnelIP EgressIP", bpfEgressList)
 		}
 	},
 }

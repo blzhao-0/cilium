@@ -56,7 +56,7 @@ func (k *Key) GetKeyPtr() unsafe.Pointer { return unsafe.Pointer(k) }
 
 // NewValue returns a new empty instance of the structure representing the BPF
 // map value
-func (k Key) NewValue() bpf.MapValue { return &RemoteEndpointInfo{} }
+func (k Key) NewValue() bpf.MapValue { return &EgressEndpointInfo{} }
 
 func (k Key) String() string {
 	switch k.Family {
@@ -86,23 +86,36 @@ func NewKey(ip net.IP) Key {
 	return result
 }
 
-// RemoteEndpointInfo implements the bpf.MapValue interface. It contains the
+// EgressEndpointInfo implements the bpf.MapValue interface. It contains the
 // security identity of a remote endpoint.
-// FIXME: duplicated with ipcache.
 // +k8s:deepcopy-gen=true
 // +k8s:deepcopy-gen:interfaces=github.com/cilium/cilium/pkg/bpf.MapValue
-type RemoteEndpointInfo struct {
+type EgressEndpointInfo struct {
+	EgressIP         types.IPv6 `align:"$union0"`
+	Family           uint8      `align:"family"`
+	Key              uint8      `align:"key"`
+	Pad              uint16     `align:"pad"`
 	SecurityIdentity uint32     `align:"sec_label"`
 	TunnelEndpoint   types.IPv4 `align:"tunnel_endpoint"`
-	Key              uint8      `align:"key"`
 }
 
-func (v *RemoteEndpointInfo) String() string {
-	return fmt.Sprintf("%d %d %s", v.SecurityIdentity, v.Key, v.TunnelEndpoint)
+func (v *EgressEndpointInfo) String() string {
+	var (
+		ipStr = "<unknown>"
+	)
+
+	switch v.Family {
+	case bpf.EndpointKeyIPv4:
+		ipStr = net.IP(v.EgressIP[:net.IPv4len]).String()
+	case bpf.EndpointKeyIPv6:
+		ipStr = v.EgressIP.String()
+	}
+
+	return fmt.Sprintf("%d %d %s %s", v.SecurityIdentity, v.Key, v.TunnelEndpoint, ipStr)
 }
 
 // GetValuePtr returns the unsafe pointer to the BPF value.
-func (v *RemoteEndpointInfo) GetValuePtr() unsafe.Pointer { return unsafe.Pointer(v) }
+func (v *EgressEndpointInfo) GetValuePtr() unsafe.Pointer { return unsafe.Pointer(v) }
 
 // Map represents an Egress BPF map.
 type Map struct {
@@ -126,8 +139,8 @@ func NewMap(name string) *Map {
 			bpf.MapTypeHash,
 			&Key{},
 			int(unsafe.Sizeof(Key{})),
-			&RemoteEndpointInfo{},
-			int(unsafe.Sizeof(RemoteEndpointInfo{})),
+			&EgressEndpointInfo{},
+			int(unsafe.Sizeof(EgressEndpointInfo{})),
 			MaxEntries,
 			bpf.BPF_F_NO_PREALLOC, 0,
 			bpf.ConvertKeyValue,
