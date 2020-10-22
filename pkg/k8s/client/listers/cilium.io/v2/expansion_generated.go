@@ -24,6 +24,10 @@ type CiliumClusterwideLocalRedirectPolicyListerExpansion interface{}
 // CiliumClusterwideNetworkPolicyLister.
 type CiliumClusterwideNetworkPolicyListerExpansion interface{}
 
+// CiliumEgressRouteListerExpansion allows custom methods to be added to
+// CiliumEgressRouteLister.
+type CiliumEgressRouteListerExpansion interface{}
+
 // CiliumEndpointListerExpansion allows custom methods to be added to
 // CiliumEndpointLister.
 type CiliumEndpointListerExpansion interface{}

@@ -26,6 +26,7 @@ type CiliumV2Interface interface {
 	RESTClient() rest.Interface
 	CiliumClusterwideLocalRedirectPoliciesGetter
 	CiliumClusterwideNetworkPoliciesGetter
+	CiliumEgressRoutesGetter
 	CiliumEndpointsGetter
 	CiliumIdentitiesGetter
 	CiliumLocalRedirectPoliciesGetter
@@ -44,6 +45,10 @@ func (c *CiliumV2Client) CiliumClusterwideLocalRedirectPolicies() CiliumClusterw
 
 func (c *CiliumV2Client) CiliumClusterwideNetworkPolicies() CiliumClusterwideNetworkPolicyInterface {
 	return newCiliumClusterwideNetworkPolicies(c)
+}
+
+func (c *CiliumV2Client) CiliumEgressRoutes() CiliumEgressRouteInterface {
+	return newCiliumEgressRoutes(c)
 }
 
 func (c *CiliumV2Client) CiliumEndpoints(namespace string) CiliumEndpointInterface {
