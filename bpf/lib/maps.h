@@ -173,19 +173,30 @@ struct bpf_elf_map __section_maps ENCRYPT_MAP = {
 struct egress_key {
 	__u16 pad1;
 	__u8 pad2;
-	__u8 family;
+	__u8 src_family;
 	union {
 		struct {
-			__u32		ip4;
+			__u32		src_ip4;
 			__u32		pad4;
 			__u32		pad5;
 			__u32		pad6;
 		};
-		union v6addr	ip6;
+		union v6addr	src_ip6;
+	};
+        __u8 dst_family;
+	union {
+		struct {
+			__u32		dst_ip4;
+			__u32		pad7;
+			__u32		pad8;
+			__u32		pad9;
+		};
+		union v6addr	dst_ip6;
 	};
 };
 struct bpf_elf_map __section_maps EGRESS_MAP = {
-	.type		= BPF_MAP_TYPE_HASH,
+	//.type		= BPF_MAP_TYPE_HASH,
+	.type		= BPF_MAP_TYPE_LPM_TRIE,
 	.size_key	= sizeof(struct egress_key),
 	.size_value	= sizeof(struct egress_endpoint_info),
 	.pinning	= PIN_GLOBAL_NS,

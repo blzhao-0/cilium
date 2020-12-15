@@ -43,7 +43,7 @@ static __always_inline int handle_nat_fwd_ipv4(struct __ctx_buff *ctx)
 	if (!revalidate_data(ctx, &data, &data_end, &ip4))
 		return DROP_INVALID;
 
-    info = lookup_ip4_egress_endpoint(ip4->saddr);
+    info = lookup_ip4_egress_endpoint(ip4->saddr, ip4->daddr);
 	if (!info) {
 		printk("missing egress endpoint\n");
         return DROP_INVALID;

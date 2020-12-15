@@ -691,7 +691,7 @@ ct_recreate4:
 		struct endpoint_key key = {};
 
 		// TODO: use your own map to find gateway
-		info = lookup_ip4_egress_endpoint(ip4->saddr);
+		info = lookup_ip4_egress_endpoint(ip4->saddr, ip4->daddr);
 		if (!info) {
 			printk("skip egress endpoint\n");
 			goto skip_egress_gateway;

@@ -135,17 +135,19 @@ LPM_LOOKUP_FN(lookup_ip4_remote_endpoint, __be32, IPCACHE4_PREFIXES,
 
 #ifdef ENABLE_EGRESS_GATEWAY
 static __always_inline __maybe_unused struct egress_endpoint_info *
-egress_lookup4(struct bpf_elf_map *map, __be32 addr)
+egress_lookup4(struct bpf_elf_map *map, __be32 src_addr, __be32 dst_addr)
 {
 	struct egress_key key = {
-		.family = ENDPOINT_KEY_IPV4,
-		.ip4 = addr,
+		.src_family = ENDPOINT_KEY_IPV4,
+		.src_ip4 = src_addr,
+                .dst_family = ENDPOINT_KEY_IPV4,
+		.dst_ip4 = dst_addr,
 	};
 	return map_lookup_elem(map, &key);
 }
 
-#define lookup_ip4_egress_endpoint(addr) \
-	egress_lookup4(&EGRESS_MAP, addr)
+#define lookup_ip4_egress_endpoint(src_addr, dst_addr) \
+	egress_lookup4(&EGRESS_MAP, src_addr, dst_addr)
 
 #endif /* ENABLE_EGRESS_GATEWAY */
 
