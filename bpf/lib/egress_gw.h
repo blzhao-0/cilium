@@ -32,7 +32,11 @@ static __always_inline int handle_nat_fwd_ipv4(struct __ctx_buff *ctx)
 {
     int ret = CTX_ACT_OK;
     struct egress_endpoint_info *info;
-	bool from_endpoint = true;
+    struct ipv4_nat_target target = {
+      .min_port = 32767,
+      .max_port = 43835,
+    };
+    bool from_endpoint = true;
     struct iphdr *ip4;
     void *data, *data_end;
 
@@ -47,11 +51,7 @@ static __always_inline int handle_nat_fwd_ipv4(struct __ctx_buff *ctx)
     
     // TODO: Fix 192.168.33.13;
     // __be32 addr = 192 + (168<<8) + (33<<16) + (13<<24);
-    struct ipv4_nat_target target = {
-		.min_port = 32767,
-		.max_port = 43835,
-		.addr = info->egress_ip4,
-	};
+    target.addr = info->egress_ip4;
 
     ret = snat_v4_process(ctx, NAT_DIR_EGRESS, &target,
 				      from_endpoint);
