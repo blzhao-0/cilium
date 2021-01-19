@@ -19,25 +19,26 @@ RUNDIR=$2
 IP4_HOST=$3
 IP6_HOST=$4
 MODE=$5
-# Only set if MODE = "direct", "ipvlan", "flannel"
-NATIVE_DEVS=$6
-XDP_DEV=$7
-XDP_MODE=$8
-MTU=$9
-IPSEC=${10}
-ENCRYPT_DEV=${11}
-HOSTLB=${12}
-HOSTLB_UDP=${13}
-HOSTLB_PEER=${14}
-CGROUP_ROOT=${15}
-BPFFS_ROOT=${16}
-NODE_PORT=${17}
-NODE_PORT_BIND=${18}
-MCPU=${19}
-NODE_PORT_IPV4_ADDRS=${20}
-NODE_PORT_IPV6_ADDRS=${21}
-NR_CPUS=${22}
-ENDPOINT_ROUTES=${23}
+# MODE = "direct", "ipvlan", "flannel" or "tunnel"
+TUNNEL_MODE = $6
+NATIVE_DEVS=$7
+XDP_DEV=$8
+XDP_MODE=$9
+MTU=${10}
+IPSEC=${11}
+ENCRYPT_DEV=${12}
+HOSTLB=${13}
+HOSTLB_UDP=${14}
+HOSTLB_PEER=${15}
+CGROUP_ROOT=${16}
+BPFFS_ROOT=${17}
+NODE_PORT=${18}
+NODE_PORT_BIND=${19}
+MCPU=${20}
+NODE_PORT_IPV4_ADDRS=${21}
+NODE_PORT_IPV6_ADDRS=${22}
+NR_CPUS=${23}
+ENDPOINT_ROUTES=${24}
 
 ID_HOST=1
 ID_WORLD=2
@@ -498,16 +499,16 @@ setup_proxy_rules
 
 sed -i '/ENCAP_GENEVE/d' $RUNDIR/globals/node_config.h
 sed -i '/ENCAP_VXLAN/d' $RUNDIR/globals/node_config.h
-if [ "$MODE" = "vxlan" ]; then
+if [ "$TUNNEL_MODE" = "vxlan" ]; then
 	echo "#define ENCAP_VXLAN 1" >> $RUNDIR/globals/node_config.h
-elif [ "$MODE" = "geneve" ]; then
+elif [ "$TUNNEL_MODE" = "geneve" ]; then
 	echo "#define ENCAP_GENEVE 1" >> $RUNDIR/globals/node_config.h
 fi
 
-if [ "$MODE" = "vxlan" -o "$MODE" = "geneve" ]; then
-	ENCAP_DEV="cilium_${MODE}"
+if [ "$MODE" = "tunnel" ]; then
+	ENCAP_DEV="cilium_${TUNNEL_MODE}"
 	ip link show $ENCAP_DEV || {
-		ip link add name $ENCAP_DEV address $(rnd_mac_addr) type $MODE external || encap_fail
+		ip link add name $ENCAP_DEV address $(rnd_mac_addr) type $TUNNEL_MODE external || encap_fail
 	}
 	ip link set $ENCAP_DEV mtu $MTU || encap_fail
 
