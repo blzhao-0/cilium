@@ -307,6 +307,10 @@ func (l *Loader) Reinitialize(ctx context.Context, o datapath.BaseProgramOwner, 
 		args[initArgMode] = "direct"
 	}
 
+	if egress && args[initArgMode] == "direct" && args[initArgTunnelMode] == "<nil>" {
+		args[initArgTunnelMode] = option.TunnelVXLAN
+	}
+
 	if option.Config.EnableNodePort {
 		args[initArgNodePort] = "true"
 		if option.Config.EnableIPv4 {
