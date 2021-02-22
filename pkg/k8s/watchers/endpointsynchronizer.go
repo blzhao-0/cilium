@@ -360,6 +360,7 @@ func (epSync *EndpointSynchronizer) DeleteK8sCiliumEndpointSync(e *endpoint.Endp
 }
 
 func deleteCEP(ctx context.Context, scopedLog *logrus.Entry, ciliumClient v2.CiliumV2Interface, e *endpoint.Endpoint) error {
+	log.Info("===========deleteCEP")
 	podName := e.GetK8sPodName()
 	if podName == "" {
 		scopedLog.Debug("Skipping CiliumEndpoint deletion because it has no k8s pod name")

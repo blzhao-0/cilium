@@ -276,6 +276,9 @@ const (
 	// CiliumLocalRedirectPolicyName is the name of a CiliumLocalRedirectPolicy
 	CiliumLocalRedirectName = "ciliumLocalRedirectPolicyName"
 
+	// CiliumEgressNATPolicyName is the name of a CiliumEgressNATPolicy
+	CiliumEgressNATPolicyName = "ciliumEgressNATPolicyName"
+
 	// BPFMapKey is a key from a BPF map
 	BPFMapKey = "bpfMapKey"
 

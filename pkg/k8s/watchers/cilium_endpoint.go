@@ -26,6 +26,7 @@ import (
 	"github.com/cilium/cilium/pkg/k8s/types"
 	"github.com/cilium/cilium/pkg/kvstore"
 	"github.com/cilium/cilium/pkg/node"
+	"github.com/cilium/cilium/pkg/option"
 	"github.com/cilium/cilium/pkg/policy"
 	"github.com/cilium/cilium/pkg/source"
 	"github.com/cilium/cilium/pkg/u8proto"
@@ -48,6 +49,7 @@ func (k *K8sWatcher) ciliumEndpointsInit(ciliumNPClient *k8s.K8sCiliumClient, as
 			cache.ResourceEventHandlerFuncs{
 				AddFunc: func(obj interface{}) {
 					var valid, equal bool
+					log.Info("==========Calling Add endpoint early")
 					defer func() { k.K8sEventReceived(metricCiliumEndpoint, metricCreate, valid, equal) }()
 					if ciliumEndpoint, ok := obj.(*types.CiliumEndpoint); ok {
 						valid = true
@@ -56,6 +58,7 @@ func (k *K8sWatcher) ciliumEndpointsInit(ciliumNPClient *k8s.K8sCiliumClient, as
 					}
 				},
 				UpdateFunc: func(oldObj, newObj interface{}) {
+					log.Info("==========Calling update endpoint early")
 					var valid, equal bool
 					defer func() { k.K8sEventReceived(metricCiliumEndpoint, metricUpdate, valid, equal) }()
 					if oldCE := k8s.ObjToCiliumEndpoint(oldObj); oldCE != nil {
@@ -71,6 +74,7 @@ func (k *K8sWatcher) ciliumEndpointsInit(ciliumNPClient *k8s.K8sCiliumClient, as
 					}
 				},
 				DeleteFunc: func(obj interface{}) {
+					log.Info("==========Calling delete endpoint early")
 					var valid, equal bool
 					defer func() { k.K8sEventReceived(metricCiliumEndpoint, metricDelete, valid, equal) }()
 					ciliumEndpoint := k8s.ObjToCiliumEndpoint(obj)
@@ -175,10 +179,16 @@ func (k *K8sWatcher) endpointUpdated(endpoint *types.CiliumEndpoint) {
 		if namedPortsChanged {
 			k.policyManager.TriggerPolicyUpdates(true, "Named ports added or updated")
 		}
+
+		if option.Config.EnableEgressGateway {
+			log.Info("==========Calling update endpoint")
+			k.egressPolicyManager.OnUpdateEndpoint(endpoint)
+		}
 	}
 }
 
 func (k *K8sWatcher) endpointDeleted(endpoint *types.CiliumEndpoint) {
+	log.Info("==========Calling delete endpoint early 2")
 	if endpoint.Networking != nil {
 		namedPortsChanged := false
 		for _, pair := range endpoint.Networking.Addressing {
@@ -199,5 +209,9 @@ func (k *K8sWatcher) endpointDeleted(endpoint *types.CiliumEndpoint) {
 		if namedPortsChanged {
 			k.policyManager.TriggerPolicyUpdates(true, "Named ports deleted")
 		}
+	}
+	if option.Config.EnableEgressGateway {
+		log.Info("==========Calling delete endpoint")
+		k.egressPolicyManager.OnDeleteEndpoint(endpoint)
 	}
 }

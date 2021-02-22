@@ -227,7 +227,7 @@ func (k *K8sWatcher) addK8sPodV1(pod *slim_corev1.Pod) error {
 	if len(podIPs) > 0 {
 		err = k.updatePodHostData(pod, podIPs)
 
-		// There might be duplicate callbacks here since this function is also
+		// There might be duplicate callback here since this function is also
 		// called from updateK8sPodV1, the consumer will need to handle the duplicate
 		// events accordingly.
 		// GH issue #13136.
