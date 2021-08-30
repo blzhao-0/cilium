@@ -47,7 +47,7 @@ require (
 	github.com/google/renameio v1.0.0
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0
-	github.com/hashicorp/consul/api v1.3.0
+	github.com/hashicorp/consul/api v1.10.0
 	github.com/hashicorp/go-immutable-radix v1.3.0
 	github.com/hashicorp/golang-lru v0.5.4
 	// must be bound to this old version not to break libnetwork

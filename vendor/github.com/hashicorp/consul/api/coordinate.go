@@ -6,9 +6,10 @@ import (
 
 // CoordinateEntry represents a node and its associated network coordinate.
 type CoordinateEntry struct {
-	Node    string
-	Segment string
-	Coord   *coordinate.Coordinate
+	Node      string
+	Segment   string
+	Partition string `json:",omitempty"`
+	Coord     *coordinate.Coordinate
 }
 
 // CoordinateDatacenterMap has the coordinates for servers in a given datacenter
@@ -37,7 +38,7 @@ func (c *Coordinate) Datacenters() ([]*CoordinateDatacenterMap, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer closeResponseBody(resp)
 
 	var out []*CoordinateDatacenterMap
 	if err := decodeBody(resp, &out); err != nil {
@@ -54,7 +55,7 @@ func (c *Coordinate) Nodes(q *QueryOptions) ([]*CoordinateEntry, *QueryMeta, err
 	if err != nil {
 		return nil, nil, err
 	}
-	defer resp.Body.Close()
+	defer closeResponseBody(resp)
 
 	qm := &QueryMeta{}
 	parseQueryMeta(resp, qm)
@@ -76,7 +77,7 @@ func (c *Coordinate) Update(coord *CoordinateEntry, q *WriteOptions) (*WriteMeta
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer closeResponseBody(resp)
 
 	wm := &WriteMeta{}
 	wm.RequestTime = rtt
@@ -92,7 +93,7 @@ func (c *Coordinate) Node(node string, q *QueryOptions) ([]*CoordinateEntry, *Qu
 	if err != nil {
 		return nil, nil, err
 	}
-	defer resp.Body.Close()
+	defer closeResponseBody(resp)
 
 	qm := &QueryMeta{}
 	parseQueryMeta(resp, qm)
