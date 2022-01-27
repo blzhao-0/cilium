@@ -40,7 +40,7 @@ require (
 	github.com/go-openapi/swag v0.19.14
 	github.com/go-openapi/validate v0.20.1
 	github.com/gogo/protobuf v1.3.2
-	github.com/golang/protobuf v1.4.3
+	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.5
 	github.com/google/gopacket v1.1.19
 	github.com/google/gops v0.3.18
@@ -58,7 +58,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/miekg/dns v1.1.26
 	github.com/morikuni/aec v1.0.0 // indirect
-	github.com/onsi/ginkgo v1.12.1
+	github.com/onsi/ginkgo v1.14.0
 	github.com/onsi/gomega v1.10.5
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
@@ -81,15 +81,15 @@ require (
 	go.uber.org/goleak v1.1.10
 	go.universe.tf/metallb v0.9.6
 	golang.org/x/crypto v0.0.0-20210503195802-e9a32991a82e
-	golang.org/x/net v0.0.0-20210504132125-bbd867fde50d
-	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6
+	golang.org/x/net v0.0.0-20211209124913-491a49abca63
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
-	golang.org/x/tools v0.1.0
+	golang.org/x/tools v0.1.6-0.20210820212750-d4cc65f0b2ff
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20210506160403-92e472f520a5
 	google.golang.org/genproto v0.0.0-20210126160654-44e461bb6506
 	google.golang.org/grpc v1.29.1
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
@@ -98,9 +98,9 @@ require (
 	k8s.io/apiextensions-apiserver v0.21.0
 	k8s.io/apimachinery v0.21.0
 	k8s.io/client-go v0.21.0
-	k8s.io/code-generator v0.21.0
-	k8s.io/klog/v2 v2.8.0
-	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
+	k8s.io/code-generator v0.23.3
+	k8s.io/klog/v2 v2.30.0
+	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65
 	// We specify the controller-tools version here to be the version of the
 	// fork below, so that when we generate CRDs, the generated CRD contains
 	// version number of the tool. We want the version number to match up with
