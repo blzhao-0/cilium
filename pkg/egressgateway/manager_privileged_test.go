@@ -17,6 +17,7 @@ import (
 	"github.com/cilium/ebpf/rlimit"
 
 	"github.com/cilium/cilium/pkg/bpf"
+	"github.com/cilium/cilium/pkg/identity"
 	v2 "github.com/cilium/cilium/pkg/k8s/apis/cilium.io/v2"
 	slimv1 "github.com/cilium/cilium/pkg/k8s/slim/k8s/apis/meta/v1"
 	k8sTypes "github.com/cilium/cilium/pkg/k8s/types"
@@ -30,6 +31,9 @@ const (
 
 	ep1IP = "10.0.0.1"
 	ep2IP = "10.0.0.2"
+
+	ep1ID = 20596
+	ep2ID = 57659
 
 	destCIDR = "1.1.1.0/24"
 
@@ -45,6 +49,8 @@ const (
 var (
 	ep1Labels = map[string]string{"test-key": "test-value-1"}
 	ep2Labels = map[string]string{"test-key": "test-value-2"}
+
+	idMap = map[identity.NumericIdentity]*identity.Identity{}
 )
 
 type egressRule struct {
@@ -67,6 +73,12 @@ type k8sCacheSyncedCheckerMock struct {
 
 func (k *k8sCacheSyncedCheckerMock) K8sCacheIsSynced() bool {
 	return k.synced
+}
+
+type identityAllocatorMock struct{}
+
+func (ia *identityAllocatorMock) LookupIdentityByID(ctx context.Context, id identity.NumericIdentity) *identity.Identity {
+	return ia.idMap[id]
 }
 
 // Hook up gocheck into the "go test" runner.
@@ -92,8 +104,9 @@ func (k *EgressGatewayTestSuite) TestEgressGatewayManager(c *C) {
 	defer cleanupPolicies()
 
 	k8sCacheSyncedChecker := &k8sCacheSyncedCheckerMock{}
+	identityAllocator := &identityAllocatorMock{}
 
-	egressGatewayManager := NewEgressGatewayManager(k8sCacheSyncedChecker)
+	egressGatewayManager := NewEgressGatewayManager(k8sCacheSyncedChecker, identityAllocator)
 	c.Assert(egressGatewayManager, NotNil)
 
 	k8sCacheSyncedChecker.synced = true
@@ -105,7 +118,7 @@ func (k *EgressGatewayTestSuite) TestEgressGatewayManager(c *C) {
 	assertEgressRules(c, []egressRule{})
 
 	// Add a new endpoint which matches policy-1
-	ep1 := newEndpoint("ep-1", ep1IP, ep1Labels)
+	ep1 := newEndpoint("ep-1", ep1IP, ep1ID, ep1Labels)
 	egressGatewayManager.OnUpdateEndpoint(&ep1)
 
 	assertEgressRules(c, []egressRule{
@@ -115,12 +128,14 @@ func (k *EgressGatewayTestSuite) TestEgressGatewayManager(c *C) {
 	// Update the endpoint labels in order for it to not be a match
 	oldEp1Labels := ep1.Identity.Labels
 	ep1.Identity.Labels = []string{}
+	// TODO: update idMap
 	egressGatewayManager.OnUpdateEndpoint(&ep1)
 
 	assertEgressRules(c, []egressRule{})
 
 	// Restore the old endpoint lables in order for it to be a match
 	ep1.Identity.Labels = oldEp1Labels
+	// TODO: update idMap
 	egressGatewayManager.OnUpdateEndpoint(&ep1)
 
 	assertEgressRules(c, []egressRule{
@@ -136,7 +151,7 @@ func (k *EgressGatewayTestSuite) TestEgressGatewayManager(c *C) {
 	})
 
 	// Add a new endpoint which matches policy-2
-	ep2 := newEndpoint("ep-2", ep2IP, ep2Labels)
+	ep2 := newEndpoint("ep-2", ep2IP, ep2ID, ep2Labels)
 	egressGatewayManager.OnUpdateEndpoint(&ep2)
 
 	assertEgressRules(c, []egressRule{
@@ -147,6 +162,7 @@ func (k *EgressGatewayTestSuite) TestEgressGatewayManager(c *C) {
 	// Update the endpoint labels for policy-1 in order for it to not be a match
 	oldEp1Labels = ep1.Identity.Labels
 	ep1.Identity.Labels = []string{}
+	// TODO: update idMap
 	egressGatewayManager.OnUpdateEndpoint(&ep1)
 
 	assertEgressRules(c, []egressRule{
@@ -180,10 +196,17 @@ func newEgressPolicyConfig(policyName string, labels map[string]string, destinat
 	}
 }
 
-func newEndpoint(name, ip string, labels map[string]string) k8sTypes.CiliumEndpoint {
+func newEndpoint(name, ip string, id int64, labels map[string]string) k8sTypes.CiliumEndpoint {
 	epLabels := []string{}
 	for k, v := range labels {
+		//epLabels = append(epLabels, fmt.Sprintf("k8s:%s=%s", k, v))
+		// Not sure about this, probably not need the "k8s:"" prefix
 		epLabels = append(epLabels, fmt.Sprintf("k8s:%s=%s", k, v))
+	}
+
+	idMap[identity.NumericIdentity(id)] = &identity.Identity{
+		ID:     identity.NumericIdentity(id),
+		Labels: labels.NewLabelsFromModel(epLabels),
 	}
 
 	return k8sTypes.CiliumEndpoint{
@@ -191,7 +214,7 @@ func newEndpoint(name, ip string, labels map[string]string) k8sTypes.CiliumEndpo
 			Name: name,
 		},
 		Identity: &v2.EndpointIdentity{
-			Labels: epLabels,
+			ID: id,
 		},
 		Networking: &v2.EndpointNetworking{
 			Addressing: v2.AddressPairList{
