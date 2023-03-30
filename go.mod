@@ -77,7 +77,7 @@ require (
 	go.etcd.io/etcd/client/pkg/v3 v3.5.3
 	go.etcd.io/etcd/client/v3 v3.5.2
 	go.uber.org/goleak v1.1.12
-	go.uber.org/multierr v1.8.0
+	go.uber.org/multierr v1.11.0
 	go.universe.tf/metallb v0.11.0
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
 	golang.org/x/net v0.0.0-20220412020605-290c469a71a5
@@ -216,7 +216,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/gengo v0.0.0-20210813121822-485abfe95c7c // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
