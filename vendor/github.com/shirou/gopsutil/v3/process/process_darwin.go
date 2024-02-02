@@ -6,15 +6,15 @@ package process
 import (
 	"context"
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/shirou/gopsutil/v3/internal/common"
-	"github.com/shirou/gopsutil/v3/net"
 	"github.com/tklauser/go-sysconf"
 	"golang.org/x/sys/unix"
+
+	"github.com/shirou/gopsutil/v3/internal/common"
+	"github.com/shirou/gopsutil/v3/net"
 )
 
 // copied from sys/sysctl.h
@@ -82,8 +82,6 @@ func (p *Process) NameWithContext(ctx context.Context) (string, error) {
 			extendedName := filepath.Base(cmdName)
 			if strings.HasPrefix(extendedName, p.name) {
 				name = extendedName
-			} else {
-				name = cmdName
 			}
 		}
 	}
@@ -112,11 +110,7 @@ func (p *Process) StatusWithContext(ctx context.Context) ([]string, error) {
 func (p *Process) ForegroundWithContext(ctx context.Context) (bool, error) {
 	// see https://github.com/shirou/gopsutil/issues/596#issuecomment-432707831 for implementation details
 	pid := p.Pid
-	ps, err := exec.LookPath("ps")
-	if err != nil {
-		return false, err
-	}
-	out, err := invoke.CommandWithContext(ctx, ps, "-o", "stat=", "-p", strconv.Itoa(int(pid)))
+	out, err := invoke.CommandWithContext(ctx, "ps", "-o", "stat=", "-p", strconv.Itoa(int(pid)))
 	if err != nil {
 		return false, err
 	}
@@ -292,11 +286,6 @@ func (p *Process) getKProc() (*unix.KinfoProc, error) {
 // And splited by Space. Caller have responsibility to manage.
 // If passed arg pid is 0, get information from all process.
 func callPsWithContext(ctx context.Context, arg string, pid int32, threadOption bool, nameOption bool) ([][]string, error) {
-	bin, err := exec.LookPath("ps")
-	if err != nil {
-		return [][]string{}, err
-	}
-
 	var cmd []string
 	if pid == 0 { // will get from all processes.
 		cmd = []string{"-ax", "-o", arg}
@@ -308,7 +297,7 @@ func callPsWithContext(ctx context.Context, arg string, pid int32, threadOption 
 	if nameOption {
 		cmd = append(cmd, "-c")
 	}
-	out, err := invoke.CommandWithContext(ctx, bin, cmd...)
+	out, err := invoke.CommandWithContext(ctx, "ps", cmd...)
 	if err != nil {
 		return [][]string{}, err
 	}
