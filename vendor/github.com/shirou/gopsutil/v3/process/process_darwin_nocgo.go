@@ -6,7 +6,6 @@ package process
 import (
 	"context"
 	"fmt"
-	"os/exec"
 	"strconv"
 	"strings"
 
@@ -19,23 +18,26 @@ func (p *Process) CwdWithContext(ctx context.Context) (string, error) {
 }
 
 func (p *Process) ExeWithContext(ctx context.Context) (string, error) {
-	lsof_bin, err := exec.LookPath("lsof")
-	if err != nil {
-		return "", err
-	}
-	out, err := invoke.CommandWithContext(ctx, lsof_bin, "-p", strconv.Itoa(int(p.Pid)), "-Fpfn")
+	out, err := invoke.CommandWithContext(ctx, "lsof", "-p", strconv.Itoa(int(p.Pid)), "-Fpfn")
 	if err != nil {
 		return "", fmt.Errorf("bad call to lsof: %s", err)
 	}
 	txtFound := 0
 	lines := strings.Split(string(out), "\n")
+	fallback := ""
 	for i := 1; i < len(lines); i++ {
 		if lines[i] == "ftxt" {
 			txtFound++
+			if txtFound == 1 {
+				fallback = lines[i-1][1:]
+			}
 			if txtFound == 2 {
 				return lines[i-1][1:], nil
 			}
 		}
+	}
+	if fallback != "" {
+		return fallback, nil
 	}
 	return "", fmt.Errorf("missing txt data returned by lsof")
 }

@@ -207,11 +207,7 @@ func IOCountersWithContext(ctx context.Context, pernic bool) ([]IOCountersStat, 
 		}
 	} else {
 		// duplicated interface, list all interfaces
-		ifconfig, err := exec.LookPath("ifconfig")
-		if err != nil {
-			return nil, err
-		}
-		if out, err = invoke.CommandWithContext(ctx, ifconfig, "-l"); err != nil {
+		if out, err = invoke.CommandWithContext(ctx, "ifconfig", "-l"); err != nil {
 			return nil, err
 		}
 		interfaceNames := strings.Fields(strings.TrimRight(string(out), endOfLine))
@@ -263,7 +259,7 @@ func IOCountersByFile(pernic bool, filename string) ([]IOCountersStat, error) {
 }
 
 func IOCountersByFileWithContext(ctx context.Context, pernic bool, filename string) ([]IOCountersStat, error) {
-	return IOCounters(pernic)
+	return IOCountersWithContext(ctx, pernic)
 }
 
 func FilterCounters() ([]FilterStat, error) {
@@ -282,7 +278,7 @@ func ConntrackStatsWithContext(ctx context.Context, percpu bool) ([]ConntrackSta
 	return nil, common.ErrNotImplementedError
 }
 
-// NetProtoCounters returns network statistics for the entire system
+// ProtoCounters returns network statistics for the entire system
 // If protocols is empty then all protocols are returned, otherwise
 // just the protocols in the list are returned.
 // Not Implemented for Darwin
