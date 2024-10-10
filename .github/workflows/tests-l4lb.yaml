@@ -192,7 +192,7 @@ jobs:
           scp default:/tmp/cilium-sysdump-out.zip .
 
       - name: Upload cilium-sysdump
-        uses: actions/upload-artifact@6673cd052c4cd6fcf4b4e6e60ea986c889389535
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: ${{ !success() }}
         with:
           name: cilium-sysdump-out.zip
