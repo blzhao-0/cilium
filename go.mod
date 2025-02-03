@@ -71,8 +71,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.11.0
 	github.com/stretchr/testify v1.7.1
-	github.com/vishvananda/netlink v1.1.1-0.20220125195016-0639e7e787ba
-	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
+	github.com/vishvananda/netlink v1.3.0
+	github.com/vishvananda/netns v0.0.4
 	go.etcd.io/etcd/api/v3 v3.5.3
 	go.etcd.io/etcd/client/pkg/v3 v3.5.3
 	go.etcd.io/etcd/client/v3 v3.5.2
@@ -82,7 +82,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
 	golang.org/x/net v0.0.0-20220412020605-290c469a71a5
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
+	golang.org/x/sys v0.10.0
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
 	golang.org/x/tools v0.1.10
 	golang.zx2c4.com/wireguard v0.0.0-20211017052713-f87e87af0d9a
