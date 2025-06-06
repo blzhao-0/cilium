@@ -1,6 +1,6 @@
 module github.com/cilium/cilium
 
-go 1.17
+go 1.23.0
 
 require (
 	github.com/Azure/azure-sdk-for-go v63.2.0+incompatible
@@ -81,7 +81,7 @@ require (
 	go.universe.tf/metallb v0.11.0
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
 	golang.org/x/net v0.0.0-20220412020605-290c469a71a5
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sync v0.15.0
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
 	golang.org/x/tools v0.1.10
