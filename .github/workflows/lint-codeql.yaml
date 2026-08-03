@@ -57,4 +57,4 @@ jobs:
       with:
         languages: go
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@1ed1437484560351c5be56cf73a48a279d116b78
+      uses: github/codeql-action/analyze@f205ea1c3313d32999d8d6a48b4f6530d4437b38
